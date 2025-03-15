@@ -5,8 +5,12 @@ import Image from "next/image";
 import { useWallet } from '../contexts/WalletContext';
 import { mockBlockchain } from '../services/mockBlockchain';
 import { useRouter } from 'next/navigation';
-
+import PolymarketInspiredHeader from '../components/PolymarketInspiredHeader';
+import RegionalFilters from '../components/RegionalFilters';
+import TrendingMarkets from '../components/TrendingMarkets';
+import MarketImage from '../components/MarketImage';
 import { Toaster, toast } from 'react-hot-toast';
+
 
 export default function Home() {
   const { publicKey, connected, balance, connect, disconnect, loading } = useWallet();
@@ -22,6 +26,60 @@ export default function Home() {
     activeUsers: 0,
     avgReturns: 0
   });
+  
+  const [activeRegion, setActiveRegion] = useState('all');
+  const [activeCountry, setActiveCountry] = useState(null);
+  
+  // Definición de regions (importada del componente RegionalFilters)
+  const regions = [
+    { id: 'all', name: 'Todos' },
+    { id: 'north_america', name: 'Norteamérica', countries: ['US', 'CA', 'MX'], flag: '🇺🇸' },
+    { id: 'central_america', name: 'Centroamérica', countries: ['GT', 'BZ', 'HN', 'SV', 'NI', 'CR', 'PA'], flag: '🇨🇷' },
+    { id: 'south_america', name: 'Sudamérica', countries: ['CO', 'VE', 'EC', 'PE', 'BR', 'BO', 'PY', 'CL', 'AR', 'UY'], flag: '🇧🇷' },
+    { id: 'caribbean', name: 'Caribe', countries: ['CU', 'DO', 'PR', 'JM', 'HT'], flag: '🇩🇴' },
+    { id: 'europe', name: 'Europa', countries: ['ES', 'GB', 'DE', 'FR', 'IT'], flag: '🇪🇺' }
+  ];
+
+  const handleRegionChange = (regionId) => {
+    setActiveRegion(regionId);
+    // Si cambiamos de región, reseteamos el filtro de país
+    if (activeRegion !== regionId) {
+      setActiveCountry(null);
+    }
+  };
+  
+  const handleCountryChange = (countryId) => {
+    setActiveCountry(countryId);
+  };
+  
+  // Función para filtrar mercados por región y país
+  const getFilteredMarkets = () => {
+    // Primero filtramos por categoría (existente)
+    let filtered = activeCategory === 'all' 
+      ? markets 
+      : markets.filter(market => market.category === activeCategory);
+    
+    // Luego filtramos por región/país
+    if (activeRegion !== 'all') {
+      const regionCountries = regions.find(r => r.id === activeRegion)?.countries || [];
+      
+      // Si hay un país seleccionado, filtramos por ese país
+      if (activeCountry) {
+        filtered = filtered.filter(market => market.country === activeCountry);
+      } 
+      // Si no hay país pero sí región, filtramos por todos los países de esa región
+      else {
+        filtered = filtered.filter(market => 
+          !market.country || regionCountries.includes(market.country)
+        );
+      }
+    }
+    
+    return filtered;
+  };
+  
+  // Obtener los mercados filtrados
+  const filteredMarkets = getFilteredMarkets();
 
   // Cargar mercados
   useEffect(() => {
@@ -73,11 +131,6 @@ export default function Home() {
     
     loadMarkets();
   }, []); // Ya no depende de 'connected'
-
-  // Filtrar mercados por categoría
-  const filteredMarkets = activeCategory === 'all' 
-    ? markets 
-    : markets.filter(market => market.category === activeCategory);
 
   // Encontrar mercados destacados
   const featuredMarkets = markets.length > 0 
@@ -168,9 +221,14 @@ export default function Home() {
 
     // Modal de autenticación
     const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+    
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-[#0a0a0a] text-white" style={{
+      backgroundImage: `linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px), 
+                        linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px)`,
+      backgroundSize: '20px 20px'
+    }}>
       <Toaster position="top-right" toastOptions={{
         style: {
           background: '#151515',
@@ -190,58 +248,33 @@ export default function Home() {
           }
         }
       }} />
-      <header className="py-4 px-6 mb-8 bg-gradient-to-r from-[#111111] to-[#0a0a0a] border-b border-[#222]">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center">
-            <h1 className="text-3xl font-bold text-[#00e5ff] neon-text">ChipBids</h1>
-            <span className="ml-3 bg-[#00ff88] text-black px-2 py-1 rounded-full text-xs font-bold">BETA</span>
-          </div>
-          
-          <div>
-            {!connected ? (
-              <button 
-                className="bg-[#00e5ff] hover:bg-[#00b8cc] text-black font-bold py-2 px-6 rounded-full shadow transition-all hover:shadow-[0_0_15px_rgba(0,229,255,0.5)]"
-                onClick={connect}
-                disabled={loading}
-              >
-                {loading ? 'Conectando...' : 'Conectar Wallet'}
-              </button>
-            ) : (
-              <div className="flex items-center space-x-4">
-                <span className="bg-[#151515] border border-[#222] px-4 py-2 rounded-full">
-                  <span className="font-bold text-[#00e5ff]">{balance}</span> CHIPS
-                </span>
-                <span className="bg-[#151515] border border-[#222] px-4 py-2 rounded-full text-sm truncate" title={publicKey}>
-                  {publicKey.slice(0, 6)}...{publicKey.slice(-4)}
-                </span>
-                <button 
-                  className="bg-[#ff3366] hover:bg-[#cc2952] text-white font-bold py-2 px-4 rounded-full shadow transition-all"
-                  onClick={disconnect}
-                >
-                  Desconectar
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      
+      {/* Nuevo header inspirado en Polymarket */}
+      <PolymarketInspiredHeader 
+        connected={connected}
+        publicKey={publicKey}
+        balance={balance}
+        connect={connect}
+        disconnect={disconnect}
+        loading={loading}
+      />
 
-      <main className="container mx-auto px-4">
+      <main className="container mx-auto px-4 pt-6">
         {/* Estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-[#151515] border border-[#222] rounded-lg p-4 hover:border-[#00e5ff] transition-all">
+          <div className="bg-[#151515] border border-[#222] rounded-lg p-4 hover:border-[#00e5ff] transition-all hover:shadow-[0_0_10px_rgba(0,229,255,0.3)]">
             <p className="text-gray-400 text-sm">Mercados Activos</p>
             <p className="text-2xl font-bold text-[#00e5ff]">{stats.activeMarkets}</p>
           </div>
-          <div className="bg-[#151515] border border-[#222] rounded-lg p-4 hover:border-[#00e5ff] transition-all">
+          <div className="bg-[#151515] border border-[#222] rounded-lg p-4 hover:border-[#00e5ff] transition-all hover:shadow-[0_0_10px_rgba(0,229,255,0.3)]">
             <p className="text-gray-400 text-sm">Total Apostado</p>
             <p className="text-2xl font-bold text-[#00e5ff]">{stats.totalWagered.toLocaleString()} CHIPS</p>
           </div>
-          <div className="bg-[#151515] border border-[#222] rounded-lg p-4 hover:border-[#00e5ff] transition-all">
+          <div className="bg-[#151515] border border-[#222] rounded-lg p-4 hover:border-[#00e5ff] transition-all hover:shadow-[0_0_10px_rgba(0,229,255,0.3)]">
             <p className="text-gray-400 text-sm">Usuarios Activos</p>
             <p className="text-2xl font-bold text-[#00e5ff]">{stats.activeUsers}</p>
           </div>
-          <div className="bg-[#151515] border border-[#222] rounded-lg p-4 hover:border-[#00e5ff] transition-all">
+          <div className="bg-[#151515] border border-[#222] rounded-lg p-4 hover:border-[#00e5ff] transition-all hover:shadow-[0_0_10px_rgba(0,229,255,0.3)]">
             <p className="text-gray-400 text-sm">Rentabilidad Media</p>
             <p className="text-2xl font-bold text-[#00e5ff]">+{stats.avgReturns}%</p>
           </div>
@@ -256,45 +289,67 @@ export default function Home() {
             </h3>
             <div className="bg-gradient-to-r from-[#11151a] to-[#0a0a0a] p-5 rounded-xl border border-[#222]">
               <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1 bg-[#151515] rounded-lg p-4 border border-[#222] hover:border-[#00e5ff] hover:shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all cursor-pointer" onClick={() => router.push(`/markets/${featuredMarkets[0].id}`)}>
-                  <div className="flex items-center mb-2">
-                    <span className="bg-[#102030] text-[#00e5ff] text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Popular</span>
-                    <h4 className="text-lg font-bold text-white">{featuredMarkets[0].title}</h4>
+                <div className="flex-1 bg-[#151515] rounded-lg overflow-hidden border border-[#222] hover:border-[#00e5ff] hover:shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all cursor-pointer" onClick={() => router.push(`/markets/${featuredMarkets[0].id}`)}>
+                  {/* Imagen del mercado destacado 1 */}
+                  <div className="relative">
+                    <MarketImage market={featuredMarkets[0]} height={180} />
+                    <div className="absolute top-2 left-2">
+                      <span className="bg-[#102030] text-[#00e5ff] text-xs font-semibold px-2.5 py-0.5 rounded-full">Popular</span>
+                    </div>
                   </div>
-                  <p className="text-gray-400 mb-3 text-sm h-10 overflow-hidden">{featuredMarkets[0].description}</p>
-                  <div className="w-full bg-[#0a0a0a] h-2 mb-3 rounded-full">
-                    <div className="bg-[#00e5ff] h-2 rounded-full" style={{ 
-                      width: `${featuredMarkets[0].yesPool / (featuredMarkets[0].yesPool + featuredMarkets[0].noPool) * 100}%` 
-                    }}></div>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">{(featuredMarkets[0].yesPool + featuredMarkets[0].noPool).toLocaleString()} CHIPS apostados</span>
-                    <span className="font-medium text-[#00e5ff]">Ver mercado →</span>
+                  
+                  <div className="p-4">
+                    <h4 className="text-lg font-bold text-white mb-2">{featuredMarkets[0].title}</h4>
+                    <div className="w-full bg-[#0a0a0a] h-2 mb-3 rounded-full">
+                      <div className="bg-[#00e5ff] h-2 rounded-full" style={{ 
+                        width: `${featuredMarkets[0].yesPool / (featuredMarkets[0].yesPool + featuredMarkets[0].noPool) * 100}%` 
+                      }}></div>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">{(featuredMarkets[0].yesPool + featuredMarkets[0].noPool).toLocaleString()} CHIPS apostados</span>
+                      <span className="font-medium text-[#00e5ff]">Ver mercado →</span>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="flex-1 bg-[#151515] rounded-lg p-4 border border-[#222] hover:border-[#ff3366] hover:shadow-[0_0_15px_rgba(255,51,102,0.2)] transition-all cursor-pointer" onClick={() => router.push(`/markets/${featuredMarkets[1].id}`)}>
-                  <div className="flex items-center mb-2">
-                    <span className="bg-[#301020] text-[#ff3366] text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Tendencia</span>
-                    <h4 className="text-lg font-bold text-white">{featuredMarkets[1].title}</h4>
+                <div className="flex-1 bg-[#151515] rounded-lg overflow-hidden border border-[#222] hover:border-[#ff3366] hover:shadow-[0_0_15px_rgba(255,51,102,0.2)] transition-all cursor-pointer" onClick={() => router.push(`/markets/${featuredMarkets[1].id}`)}>
+                  {/* Imagen del mercado destacado 2 */}
+                  <div className="relative">
+                    <MarketImage market={featuredMarkets[1]} height={180} />
+                    <div className="absolute top-2 left-2">
+                      <span className="bg-[#301020] text-[#ff3366] text-xs font-semibold px-2.5 py-0.5 rounded-full">Tendencia</span>
+                    </div>
                   </div>
-                  <p className="text-gray-400 mb-3 text-sm h-10 overflow-hidden">{featuredMarkets[1].description}</p>
-                  <div className="w-full bg-[#0a0a0a] h-2 mb-3 rounded-full">
-                    <div className="bg-[#ff3366] h-2 rounded-full" style={{ 
-                      width: `${featuredMarkets[1].yesPool / (featuredMarkets[1].yesPool + featuredMarkets[1].noPool) * 100}%` 
-                    }}></div>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">{(featuredMarkets[1].yesPool + featuredMarkets[1].noPool).toLocaleString()} CHIPS apostados</span>
-                    <span className="font-medium text-[#ff3366]">Ver mercado →</span>
+                  
+                  <div className="p-4">
+                    <h4 className="text-lg font-bold text-white mb-2">{featuredMarkets[1].title}</h4>
+                    <div className="w-full bg-[#0a0a0a] h-2 mb-3 rounded-full">
+                      <div className="bg-[#ff3366] h-2 rounded-full" style={{ 
+                        width: `${featuredMarkets[1].yesPool / (featuredMarkets[1].yesPool + featuredMarkets[1].noPool) * 100}%` 
+                      }}></div>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">{(featuredMarkets[1].yesPool + featuredMarkets[1].noPool).toLocaleString()} CHIPS apostados</span>
+                      <span className="font-medium text-[#ff3366]">Ver mercado →</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         )}
-        
-        {/* Navegación y filtros */}
+        {/* Filtros Regionales */}
+        <RegionalFilters 
+          onRegionChange={handleRegionChange}
+          onCountryChange={handleCountryChange}
+          activeRegion={activeRegion}
+          activeCountry={activeCountry}
+        />
+
+        {/* Mercados Calientes */}
+        <TrendingMarkets markets={markets} />
+
+        {/* Lista de Mercados */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-white">Mercados Predictivos</h2>
@@ -306,164 +361,202 @@ export default function Home() {
             </button>
           </div>
           
-          <div className="flex gap-2 mb-6 overflow-x-auto py-2">
-            <button 
-              className={`px-4 py-2 rounded-full shadow-sm font-medium transition-all ${
-                activeCategory === 'all' 
-                  ? 'bg-[#00e5ff] text-black' 
-                  : 'bg-[#151515] border border-[#222] hover:bg-[#1a1a1a] text-gray-200'
-              }`}
-              onClick={() => setActiveCategory('all')}
-            >
-              Todos
-            </button>
-            <button 
-              className={`px-4 py-2 rounded-full shadow-sm font-medium transition-all ${
-                activeCategory === 'crypto' 
-                  ? 'bg-[#00e5ff] text-black' 
-                  : 'bg-[#151515] border border-[#222] hover:bg-[#1a1a1a] text-gray-200'
-              }`}
-              onClick={() => setActiveCategory('crypto')}
-            >
-              Criptomonedas
-            </button>
-            <button 
-              className={`px-4 py-2 rounded-full shadow-sm font-medium transition-all ${
-                activeCategory === 'sports' 
-                  ? 'bg-[#00e5ff] text-black' 
-                  : 'bg-[#151515] border border-[#222] hover:bg-[#1a1a1a] text-gray-200'
-              }`}
-              onClick={() => setActiveCategory('sports')}
-            >
-              Deportes
-            </button>
-            <button 
-              className={`px-4 py-2 rounded-full shadow-sm font-medium transition-all ${
-                activeCategory === 'politics' 
-                  ? 'bg-[#00e5ff] text-black' 
-                  : 'bg-[#151515] border border-[#222] hover:bg-[#1a1a1a] text-gray-200'
-              }`}
-              onClick={() => setActiveCategory('politics')}
-            >
-              Política
-            </button>
-            <button 
-              className={`px-4 py-2 rounded-full shadow-sm font-medium transition-all ${
-                activeCategory === 'technology' 
-                  ? 'bg-[#00e5ff] text-black' 
-                  : 'bg-[#151515] border border-[#222] hover:bg-[#1a1a1a] text-gray-200'
-              }`}
-              onClick={() => setActiveCategory('technology')}
-            >
-              Tecnología
+          {loadingMarkets ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="w-10 h-10 border-t-2 border-b-2 border-[#00e5ff] rounded-full animate-spin"></div>
+              <span className="ml-3 text-gray-400">Cargando mercados...</span>
+            </div>
+          ) : filteredMarkets.length === 0 ? (
+            <div className="bg-[#151515] p-8 text-center rounded-lg border border-[#222]">
+              <p className="text-gray-400 mb-4">No hay mercados disponibles en esta categoría.</p>
+              <button 
+                className="bg-[#00e5ff] hover:bg-[#00b8cc] text-black font-bold py-2 px-4 rounded-md transition-all hover:shadow-[0_0_10px_rgba(0,229,255,0.5)]"
+                onClick={() => router.push('/markets/create')}
+              >
+                Crear Nuevo Mercado
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredMarkets.map(market => (
+                <div key={market.id} className="bg-[#151515] border border-[#222] rounded-lg overflow-hidden hover:border-[#00e5ff] hover:shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all">
+                  {/* Imagen del mercado */}
+                  <div className="relative">
+                    <MarketImage market={market} height={160} />
+                    
+                    <div className="absolute bottom-2 right-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                        market.status === 'open' 
+                          ? 'bg-[#102010] text-[#00ff88]' 
+                          : market.status === 'resolved'
+                            ? 'bg-[#102030] text-[#00e5ff]' 
+                            : 'bg-[#101010] text-gray-400'
+                      }`}>
+                        {market.status === 'open' 
+                          ? 'Abierto' 
+                          : market.status === 'resolved'
+                            ? 'Resuelto'
+                            : 'Cerrado'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4">
+                    <h3 className="text-lg font-bold truncate text-white pr-2 mb-2">{market.title}</h3>
+                    
+                    <p className="text-gray-400 mb-3 h-10 overflow-hidden text-sm">{market.description}</p>
+                    
+                    <div className="mb-3">
+                      <div className="flex justify-between items-center">
+                        <div className="text-sm">
+                          <span className="text-[#00ff88] font-medium">{getPercentage(market.yesPool, market.yesPool + market.noPool)}%</span>
+                        </div>
+                        <div className="text-gray-400 text-xs">
+                          {(market.yesPool + market.noPool).toLocaleString()} CHIPS
+                        </div>
+                        <div className="text-sm">
+                          <span className="text-[#ff3366] font-medium">{getPercentage(market.noPool, market.yesPool + market.noPool)}%</span>
+                        </div>
+                      </div>
+                      <div className="h-2 bg-[#0a0a0a] rounded-full overflow-hidden mt-1">
+                        {(market.yesPool || market.noPool) ? (
+                          <>
+                            <div 
+                              className={`h-full bg-[#00ff88] float-left ${market.resolvedOption === 'yes' ? 'animate-pulse' : ''}`}
+                              style={{ 
+                                width: `${getPercentage(market.yesPool, market.yesPool + market.noPool)}%` 
+                              }}
+                            ></div>
+                            <div 
+                              className={`h-full bg-[#ff3366] float-right ${market.resolvedOption === 'no' ? 'animate-pulse' : ''}`}
+                              style={{ 
+                                width: `${getPercentage(market.noPool, market.yesPool + market.noPool)}%` 
+                              }}
+                            ></div>
+                          </>
+                        ) : (
+                          <div className="h-full bg-[#222] w-full"></div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between text-xs text-gray-400 mb-3">
+                      <span>
+                        Cierra: {new Date(market.endDate || market.createdAt).toLocaleDateString()}
+                      </span>
+                      <span>
+                        Vol: {(market.yesPool + market.noPool).toLocaleString()}
+                      </span>
+                    </div>
+                    
+                    {/* Trading buttons */}
+                    <div className="flex space-x-2 mb-3">
+                      {market.status === 'open' ? (
+                        <>
+                          <button 
+                            onClick={() => handleQuickTrade(market.id, 'yes')}
+                            className="w-1/2 py-2 bg-[#102010] hover:bg-[#00ff88] text-[#00ff88] hover:text-black font-medium rounded transition-all flex justify-center items-center text-sm hover:shadow-[0_0_10px_rgba(0,255,136,0.3)]"
+                          >
+                            Comprar Sí <span className="ml-1">↗</span>
+                          </button>
+                          <button 
+                            onClick={() => handleQuickTrade(market.id, 'no')}
+                            className="w-1/2 py-2 bg-[#200a10] hover:bg-[#ff3366] text-[#ff3366] hover:text-white font-medium rounded transition-all flex justify-center items-center text-sm hover:shadow-[0_0_10px_rgba(255,51,102,0.3)]"
+                          >
+                            Comprar No <span className="ml-1">↗</span>
+                          </button>
+                        </>
+                      ) : market.status === 'resolved' ? (
+                        <div className="w-full py-2 bg-[#102030] text-[#00e5ff] font-medium rounded flex justify-center items-center text-sm">
+                          <span>Resuelto: {market.resolvedOption === 'yes' ? 'SÍ' : 'NO'}</span>
+                        </div>
+                      ) : (
+                        <div className="w-full py-2 bg-[#101010] text-gray-400 font-medium rounded flex justify-center items-center text-sm">
+                          <span>Mercado cerrado</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <button 
+                      className="w-full bg-[#101010] hover:bg-[#1a1a1a] text-gray-300 border border-[#222] font-medium py-2 px-4 rounded-md transition-all text-sm"
+                      onClick={() => router.push(`/markets/${market.id}`)}
+                    >
+                      Ver detalles
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Minijuegos destacados */}
+        <div className="mt-12 bg-gradient-to-r from-[#101021] to-[#101016] rounded-lg p-6 border border-[#222]">
+          <h3 className="text-xl font-bold mb-4 text-[#00e5ff] flex items-center">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+            Minijuegos
+            <span className="ml-2 text-xs bg-[#00ff88] text-black px-2 py-0.5 rounded-full">Próximamente</span>
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-[#151515] rounded-lg p-4 border border-[#222] hover:border-[#00e5ff] transition-all hover:shadow-[0_0_10px_rgba(0,229,255,0.3)]">
+              <div className="relative h-32 rounded bg-gradient-to-r from-[#101018] to-[#121212] mb-3 overflow-hidden flex items-center justify-center">
+                <div className="absolute inset-0 opacity-20" style={{
+                  backgroundImage: `radial-gradient(circle, rgba(0,229,255,0.4) 1px, transparent 1px)`,
+                  backgroundSize: '16px 16px'
+                }}></div>
+                <span className="text-5xl">🎯</span>
+              </div>
+              <h4 className="text-lg font-semibold mb-1 text-white">PLINKO</h4>
+              <p className="text-gray-400 text-sm">Hasta 1000x multiplicador con caída de bolas</p>
+            </div>
+            
+            <div className="bg-[#151515] rounded-lg p-4 border border-[#222] hover:border-[#00e5ff] transition-all hover:shadow-[0_0_10px_rgba(0,229,255,0.3)]">
+              <div className="relative h-32 rounded bg-gradient-to-r from-[#101018] to-[#121212] mb-3 overflow-hidden flex items-center justify-center">
+                <div className="absolute inset-0 opacity-20" style={{
+                  backgroundImage: `radial-gradient(circle, rgba(0,229,255,0.4) 1px, transparent 1px)`,
+                  backgroundSize: '16px 16px'
+                }}></div>
+                <span className="text-5xl">🎲</span>
+              </div>
+              <h4 className="text-lg font-semibold mb-1 text-white">DICE</h4>
+              <p className="text-gray-400 text-sm">Predice si el dado caerá por encima o por debajo</p>
+            </div>
+            
+            <div className="bg-[#151515] rounded-lg p-4 border border-[#222] hover:border-[#00e5ff] transition-all hover:shadow-[0_0_10px_rgba(0,229,255,0.3)]">
+              <div className="relative h-32 rounded bg-gradient-to-r from-[#101018] to-[#121212] mb-3 overflow-hidden flex items-center justify-center">
+                <div className="absolute inset-0 opacity-20" style={{
+                  backgroundImage: `radial-gradient(circle, rgba(0,229,255,0.4) 1px, transparent 1px)`,
+                  backgroundSize: '16px 16px'
+                }}></div>
+                <span className="text-5xl">💣</span>
+              </div>
+              <h4 className="text-lg font-semibold mb-1 text-white">MINES</h4>
+              <p className="text-gray-400 text-sm">Encuentra las gemas y evita las minas</p>
+            </div>
+            
+            <div className="bg-[#151515] rounded-lg p-4 border border-[#222] hover:border-[#00e5ff] transition-all hover:shadow-[0_0_10px_rgba(0,229,255,0.3)]">
+              <div className="relative h-32 rounded bg-gradient-to-r from-[#101018] to-[#121212] mb-3 overflow-hidden flex items-center justify-center">
+                <div className="absolute inset-0 opacity-20" style={{
+                  backgroundImage: `radial-gradient(circle, rgba(0,229,255,0.4) 1px, transparent 1px)`,
+                  backgroundSize: '16px 16px'
+                }}></div>
+                <span className="text-5xl">📈</span>
+              </div>
+              <h4 className="text-lg font-semibold mb-1 text-white">CRASH</h4>
+              <p className="text-gray-400 text-sm">Retira tus fondos antes de que el gráfico caiga</p>
+            </div>
+          </div>
+          
+          <div className="mt-6 flex justify-center">
+            <button className="bg-[#00e5ff] hover:bg-[#00b8cc] text-black font-bold py-2 px-6 rounded-full shadow transition-all hover:shadow-[0_0_15px_rgba(0,229,255,0.5)]">
+              Ver todos los juegos
             </button>
           </div>
         </div>
 
-        {/* Lista de Mercados */}
-        {loadingMarkets ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="w-10 h-10 border-t-2 border-b-2 border-[#00e5ff] rounded-full animate-spin"></div>
-            <span className="ml-3 text-gray-400">Cargando mercados...</span>
-          </div>
-        ) : filteredMarkets.length === 0 ? (
-          <div className="bg-[#151515] p-8 text-center rounded-lg border border-[#222]">
-            <p className="text-gray-400 mb-4">No hay mercados disponibles en esta categoría.</p>
-            <button 
-              className="bg-[#00e5ff] hover:bg-[#00b8cc] text-black font-bold py-2 px-4 rounded-md transition-all hover:shadow-[0_0_10px_rgba(0,229,255,0.5)]"
-              onClick={() => router.push('/markets/create')}
-            >
-              Crear Nuevo Mercado
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredMarkets.map(market => (
-              <div key={market.id} className="bg-[#151515] border border-[#222] rounded-lg p-4 hover:border-[#00e5ff] hover:shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-lg font-bold truncate text-white pr-2">{market.title}</h3>
-                  <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                    market.status === 'open' 
-                      ? 'bg-[#102010] text-[#00ff88]' 
-                      : 'bg-[#101010] text-gray-400'
-                  }`}>
-                    {market.status === 'open' ? 'Abierto' : 'Cerrado'}
-                  </span>
-                </div>
-                
-                <p className="text-gray-400 mb-3 h-10 overflow-hidden text-sm">{market.description}</p>
-                
-                <div className="mb-3">
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm">
-                      <span className="text-[#00ff88] font-medium">{getPercentage(market.yesPool, market.yesPool + market.noPool)}%</span>
-                    </div>
-                    <div className="text-gray-400 text-xs">
-                      {(market.yesPool + market.noPool).toLocaleString()} CHIPS
-                    </div>
-                    <div className="text-sm">
-                      <span className="text-[#ff3366] font-medium">{getPercentage(market.noPool, market.yesPool + market.noPool)}%</span>
-                    </div>
-                  </div>
-                  <div className="h-2 bg-[#0a0a0a] rounded-full overflow-hidden mt-1">
-                    {(market.yesPool || market.noPool) ? (
-                      <>
-                        <div 
-                          className="h-full bg-[#00ff88] float-left"
-                          style={{ 
-                            width: `${getPercentage(market.yesPool, market.yesPool + market.noPool)}%` 
-                          }}
-                        ></div>
-                        <div 
-                          className="h-full bg-[#ff3366] float-right"
-                          style={{ 
-                            width: `${getPercentage(market.noPool, market.yesPool + market.noPool)}%` 
-                          }}
-                        ></div>
-                      </>
-                    ) : (
-                      <div className="h-full bg-[#222] w-full"></div>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex justify-between text-xs text-gray-400 mb-3">
-                  <span>
-                    Cierra: {new Date(market.endDate || market.createdAt).toLocaleDateString()}
-                  </span>
-                  <span>
-                    Vol: {(market.yesPool + market.noPool).toLocaleString()}
-                  </span>
-                </div>
-                
-                {/* Trading buttons */}
-                <div className="flex space-x-2 mb-3">
-                  <button 
-                    onClick={() => handleQuickTrade(market.id, 'yes')}
-                    className="w-1/2 py-2 bg-[#102010] hover:bg-[#00ff88] text-[#00ff88] hover:text-black font-medium rounded transition-all flex justify-center items-center text-sm"
-                  >
-                    Comprar Sí <span className="ml-1">↗</span>
-                  </button>
-                  <button 
-                    onClick={() => handleQuickTrade(market.id, 'no')}
-                    className="w-1/2 py-2 bg-[#200a10] hover:bg-[#ff3366] text-[#ff3366] hover:text-white font-medium rounded transition-all flex justify-center items-center text-sm"
-                  >
-                    Comprar No <span className="ml-1">↗</span>
-                  </button>
-                </div>
-                
-                <button 
-                  className="w-full bg-[#101010] hover:bg-[#1a1a1a] text-gray-300 border border-[#222] font-medium py-2 px-4 rounded-md transition-all text-sm"
-                  onClick={() => router.push(`/markets/${market.id}`)}
-                >
-                  Ver detalles
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Próximamente */}
+        {/* Próximamente - Otras características */}
         <div className="mt-12 bg-gradient-to-r from-[#101021] to-[#101016] rounded-lg p-6 border border-[#222]">
           <h3 className="text-xl font-bold mb-4 text-[#00e5ff]">Próximamente</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -496,11 +589,11 @@ export default function Home() {
             <div className="bg-[#151515] rounded-lg p-5 border border-[#222] hover:border-[#00ff88] transition-all">
               <div className="bg-[#102010] text-[#00ff88] rounded-full w-12 h-12 flex items-center justify-center mb-4">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                 </svg>
               </div>
-              <h4 className="text-lg font-semibold mb-2 text-[#00ff88]">Minijuegos</h4>
-              <p className="text-gray-400">Gana CHIPS participando en diversos juegos de azar verificablemente justos.</p>
+              <h4 className="text-lg font-semibold mb-2 text-[#00ff88]">Sistema de Gamificación</h4>
+              <p className="text-gray-400">Compite con otros usuarios, sube de nivel y desbloquea recompensas exclusivas.</p>
               <div className="mt-4">
                 <span className="inline-block bg-[#102010] text-[#00ff88] text-xs px-2 py-1 rounded-full">En desarrollo</span>
               </div>
@@ -558,6 +651,7 @@ export default function Home() {
           </div>
         </div>
       </footer>
+      
       {/* Modal de apuesta rápida */}
       {betModal.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50">
@@ -680,6 +774,6 @@ export default function Home() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
+      </div>
+    );
+  }

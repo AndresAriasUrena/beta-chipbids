@@ -1,14 +1,24 @@
 @import "tailwindcss";
 
+Untitled
+
 :root {
+  /* Colores base */
   --background: #0a0a0a;
   --background-secondary: #111111;
+  --background-dark: #050505;
   --card-bg: #151515;
   --card-hover: #1a1a1a;
+  
+  /* Colores principales */
   --primary: #00e5ff;
   --primary-hover: #00b8cc;
   --secondary: #00ff88;
   --secondary-hover: #00cc6f;
+  --accent-purple: #9945FF;
+  --accent-purple-hover: #8935ef;
+  
+  /* Otros colores */
   --text: #ffffff;
   --text-secondary: #bbbbbb;
   --border: #222222;
@@ -16,6 +26,11 @@
   --danger: #ff3366;
   --warning: #ffcc00;
   --info: #00e5ff;
+  
+  /* Efectos de neón */
+  --neon-primary-glow: 0 0 10px rgba(0, 229, 255, 0.6);
+  --neon-secondary-glow: 0 0 10px rgba(0, 255, 136, 0.6);
+  --neon-purple-glow: 0 0 10px rgba(153, 69, 255, 0.6);
 }
 
 body {

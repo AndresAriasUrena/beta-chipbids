@@ -39,11 +39,70 @@ export const mockBlockchain = {
           totalBets: 0,
           resolvedOption: null,
           resolvedAt: null,
+          resolutionType: marketData.resolutionType || 'manual', // 'automatic' o 'manual'
+          resolutionDetails: null,
           ...marketData
         };
       
       storage.markets.push(newMarket);
       return newMarket;
+    },
+    
+    // Resolver un mercado
+    resolveMarket: async (marketId, result, verificationData = {}) => {
+      await simulateNetworkDelay();
+      
+      // Buscar mercado
+      const marketIndex = storage.markets.findIndex(m => m.id === marketId);
+      if (marketIndex === -1) {
+        throw new Error('Mercado no encontrado');
+      }
+      
+      const market = storage.markets[marketIndex];
+      
+      // Verificar que el mercado está abierto
+      if (market.status !== 'open') {
+        throw new Error('El mercado ya ha sido resuelto o está cerrado');
+      }
+      
+      // Actualizar el mercado con el resultado
+      market.resolvedOption = result;
+      market.resolvedAt = new Date().toISOString();
+      market.status = 'resolved';
+      market.resolutionDetails = verificationData;
+      
+      // Pagar a los ganadores (simulado)
+      // Obtener todas las apuestas para este mercado
+      const marketBets = storage.bets.filter(bet => bet.marketId === marketId);
+      
+      // Determinar la cantidad total de fichas apostadas y la cantidad apostada a la opción ganadora
+      const totalPool = market.yesPool + market.noPool;
+      const winningPool = result === 'yes' ? market.yesPool : market.noPool;
+      
+      // Si no hay apuestas ganadoras, no hacemos nada
+      if (winningPool <= 0) {
+        storage.markets[marketIndex] = market;
+        return market;
+      }
+      
+      // Distribuir las ganancias a las apuestas ganadoras
+      marketBets.forEach(bet => {
+        if (bet.option === result) {
+          // Calcular las ganancias: (apuesta / total_apuestas_ganadoras) * total_pool
+          const winnings = (bet.amount / winningPool) * totalPool * 0.98; // Con comisión del 2%
+          
+          // Pagar al ganador
+          const wallet = storage.wallets[bet.walletAddress];
+          if (wallet) {
+            wallet.balance += winnings;
+          }
+        }
+      });
+      
+      // Guardar cambios
+      storage.markets[marketIndex] = market;
+      
+      return market;
     }
   },
 
@@ -95,6 +154,7 @@ export const mockBlockchain = {
         title: "¿Bitcoin superará los $100,000 antes de fin de año?",
         description: "El precio de Bitcoin (BTC) debe alcanzar o superar los $100,000 USD en cualquier exchange principal como Binance, Coinbase o Kraken durante al menos 1 hora antes del 31 de diciembre de 2025.",
         category: "crypto",
+        country: null,  // Global - no tiene país específico
         endDate: new Date(2025, 11, 31).toISOString(),
         yesPool: 3250,
         noPool: 1850,
@@ -117,6 +177,7 @@ export const mockBlockchain = {
         title: "¿Ganará Argentina la Copa América 2025?",
         description: "Argentina debe ser declarada campeona oficial de la Copa América 2025 por la CONMEBOL. El mercado se resolverá después de la final del torneo.",
         category: "sports",
+        country: "AR",  // Añadido
         endDate: new Date(2025, 7, 15).toISOString(),
         yesPool: 4200,
         noPool: 3800,
@@ -127,6 +188,7 @@ export const mockBlockchain = {
         title: "¿Real Madrid ganará la Champions League 2025-2026?",
         description: "El Real Madrid debe ser declarado campeón oficial de la UEFA Champions League 2025-2026. El mercado se resolverá tras la final.",
         category: "sports",
+        country: "ES",  // Añadido
         endDate: new Date(2026, 5, 30).toISOString(),
         yesPool: 2800,
         noPool: 3100,
@@ -139,6 +201,7 @@ export const mockBlockchain = {
         title: "¿Se celebrarán elecciones anticipadas en España antes de octubre 2025?",
         description: "Debe anunciarse y celebrarse oficialmente una elección general española antes del 1 de octubre de 2025.",
         category: "politics",
+        country: "ES",  // Añadido
         endDate: new Date(2025, 9, 1).toISOString(),
         yesPool: 1250,
         noPool: 3650,
@@ -149,6 +212,7 @@ export const mockBlockchain = {
         title: "¿Kamala Harris se presentará como candidata en 2028?",
         description: "Kamala Harris debe anunciar oficialmente su candidatura para las elecciones presidenciales de Estados Unidos de 2028.",
         category: "politics",
+        country: "US",  // Añadido
         endDate: new Date(2027, 11, 31).toISOString(),
         yesPool: 2950,
         noPool: 1870,
@@ -161,6 +225,7 @@ export const mockBlockchain = {
         title: "¿La nueva temporada de House of the Dragon superará los 15 millones de espectadores?",
         description: "El estreno de la nueva temporada de House of the Dragon debe alcanzar o superar los 15 millones de espectadores globales según las cifras oficiales de HBO/Warner.",
         category: "entertainment",
+        country: "US",  // Añadido
         endDate: new Date(2025, 7, 1).toISOString(),
         yesPool: 1780,
         noPool: 920,
@@ -183,6 +248,7 @@ export const mockBlockchain = {
         title: "¿Apple lanzará sus gafas de realidad aumentada antes de septiembre?",
         description: "Apple debe anunciar y comenzar a vender oficialmente unas gafas/dispositivo de realidad aumentada (no VR) antes del 1 de septiembre de 2025.",
         category: "technology",
+        country: "US",  // Añadido
         endDate: new Date(2025, 8, 1).toISOString(),
         yesPool: 2150,
         noPool: 3280,
@@ -193,6 +259,7 @@ export const mockBlockchain = {
         title: "¿SpaceX completará el primer aterrizaje tripulado en Marte antes de 2030?",
         description: "SpaceX debe completar con éxito una misión tripulada a Marte con al menos un aterrizaje y posterior despegue seguro antes del 1 de enero de 2030.",
         category: "technology",
+        country: "US",  // Añadido
         endDate: new Date(2029, 11, 31).toISOString(),
         yesPool: 1840,
         noPool: 4120,
@@ -205,6 +272,7 @@ export const mockBlockchain = {
         title: "¿La temperatura global promedio de 2025 será la más alta registrada?",
         description: "El año 2025 debe ser declarado oficialmente por la NASA o la NOAA como el año con la temperatura global promedio más alta jamás registrada.",
         category: "other",
+        country: null,  // Global - no tiene país específico
         endDate: new Date(2026, 1, 15).toISOString(),
         yesPool: 3760,
         noPool: 1230,
@@ -215,6 +283,7 @@ export const mockBlockchain = {
         title: "¿Se descubrirá evidencia concluyente de vida extraterrestre antes de 2027?",
         description: "Una agencia gubernamental, institución científica o universidad reconocida debe anunciar el descubrimiento de evidencia concluyente (no ambigua) de vida extraterrestre antes del 1 de enero de 2027.",
         category: "other",
+        country: null,  // Global - no tiene país específico
         endDate: new Date(2026, 11, 31).toISOString(),
         yesPool: 890,
         noPool: 4560,
