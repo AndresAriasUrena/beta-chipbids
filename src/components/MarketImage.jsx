@@ -4,15 +4,31 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
+// Mapeo de títulos de mercado a nombres de archivo de imagen
+const MARKET_IMAGE_MAPPING = {
+  "¿Bitcoin superará los $100,000 antes de fin de año?": "/images/markets/bitcoin-price2.png",
+  "¿Ethereum tendrá más de 500,000 validadores antes de julio?": "/images/markets/ethereum.png",
+  "¿Ganará Argentina la Copa América 2025?": "/images/markets/argentina-football.png",
+  "¿Real Madrid ganará la Champions League 2025-2026?": "/images/markets/real-madrid.png",
+  "¿Se celebrarán elecciones anticipadas en España antes de octubre 2025?": "/images/markets/spain-politics.png",
+  "¿Kamala Harris se presentará como candidata en 2028?": "/images/markets/harris.png",
+  "¿La nueva temporada de House of the Dragon superará los 15 millones de espectadores?": "/images/markets/house-of-the-dragon.png",
+  "¿La próxima película de Marvel superará los $1,000 millones en taquilla?": "/images/markets/marvel.png",
+  "¿Apple lanzará sus gafas de realidad aumentada antes de septiembre?": "/images/markets/apple-ar.png",
+  "¿SpaceX completará el primer aterrizaje tripulado en Marte antes de 2030?": "/images/markets/spacex-mars.png",
+  "¿La temperatura global promedio de 2025 será la más alta registrada?": "/images/markets/global-warming.png",
+  "¿Se descubrirá evidencia concluyente de vida extraterrestre antes de 2027?": "/images/markets/alien-life.png"
+};
+
 // Imágenes predeterminadas por categoría
 const DEFAULT_IMAGES = {
-  crypto: '/images/categories/crypto.jpg',
-  sports: '/images/categories/sports.jpg',
-  politics: '/images/categories/politics.jpg',
-  entertainment: '/images/categories/entertainment.jpg',
-  technology: '/images/categories/technology.jpg',
-  other: '/images/categories/other.jpg',
-  default: '/images/categories/default.jpg'
+  crypto: '/images/categories/crypto.png',
+  sports: '/images/categories/sports.png',
+  politics: '/images/categories/politics.png',
+  entertainment: '/images/categories/entertainment.png',
+  technology: '/images/categories/technology.png',
+  other: '/images/categories/other.png',
+  default: '/images/categories/default.png'
 };
 
 // Colores de gradiente por categoría para cuando no hay imagen
@@ -47,11 +63,16 @@ const MarketImage = ({
   const [imageSrc, setImageSrc] = useState(null);
   
   useEffect(() => {
-    // Si el mercado tiene una imagen personalizada, la usamos
-    if (market.imageUrl) {
+    // Primero intentamos encontrar una imagen específica para este mercado por título
+    if (market.title && MARKET_IMAGE_MAPPING[market.title]) {
+      setImageSrc(MARKET_IMAGE_MAPPING[market.title]);
+    } 
+    // Si el mercado tiene una URL de imagen personalizada, la usamos
+    else if (market.imageUrl) {
       setImageSrc(market.imageUrl);
-    } else {
-      // Si no, usamos la imagen predeterminada para su categoría
+    } 
+    // Si no, usamos la imagen predeterminada para su categoría
+    else {
       const category = market.category || 'default';
       setImageSrc(DEFAULT_IMAGES[category] || DEFAULT_IMAGES.default);
     }
@@ -73,7 +94,7 @@ const MarketImage = ({
     >
       {imageSrc && !imageError ? (
         <>
-          {/* Simular una imagen Next/Image con un div de fondo para la demo */}
+          {/* Capa de fondo difuminada */}
           <div 
             className="absolute inset-0 bg-cover bg-center"
             style={{ 
@@ -84,6 +105,7 @@ const MarketImage = ({
             }}
           />
           
+          {/* Imagen principal */}
           <div 
             className="absolute inset-0 bg-cover bg-center flex items-center justify-center"
             style={{ backgroundImage: `url(${imageSrc})` }}

@@ -36,18 +36,18 @@ export default function CreateMarket() {
   
   const predefinedImages = [
     { value: '', label: 'Seleccionar imagen predeterminada' },
-    { value: '/images/markets/bitcoin-price.jpg', label: 'Criptomonedas - Bitcoin' },
-    { value: '/images/markets/ethereum.jpg', label: 'Criptomonedas - Ethereum' },
-    { value: '/images/markets/argentina-football.jpg', label: 'Deportes - Fútbol Argentina' },
-    { value: '/images/markets/real-madrid.jpg', label: 'Deportes - Real Madrid' },
-    { value: '/images/markets/spain-politics.jpg', label: 'Política - España' },
-    { value: '/images/markets/harris.jpg', label: 'Política - Estados Unidos' },
-    { value: '/images/markets/house-of-the-dragon.jpg', label: 'Entretenimiento - Series' },
-    { value: '/images/markets/marvel.jpg', label: 'Entretenimiento - Películas' },
-    { value: '/images/markets/apple-ar.jpg', label: 'Tecnología - Apple' },
-    { value: '/images/markets/spacex-mars.jpg', label: 'Tecnología - SpaceX' },
-    { value: '/images/markets/global-warming.jpg', label: 'Otros - Clima' },
-    { value: '/images/markets/alien-life.jpg', label: 'Otros - Ciencia' }
+    { value: '/images/markets/bitcoin-price2.png', label: 'Criptomonedas - Bitcoin' },
+    { value: '/images/markets/ethereum.png', label: 'Criptomonedas - Ethereum' },
+    { value: '/images/markets/argentina-football.png', label: 'Deportes - Fútbol Argentina' },
+    { value: '/images/markets/real-madrid.png', label: 'Deportes - Real Madrid' },
+    { value: '/images/markets/spain-politics.png', label: 'Política - España' },
+    { value: '/images/markets/harris.png', label: 'Política - Estados Unidos' },
+    { value: '/images/markets/house-of-the-dragon.png', label: 'Entretenimiento - Series' },
+    { value: '/images/markets/marvel.png', label: 'Entretenimiento - Películas' },
+    { value: '/images/markets/apple-ar.png', label: 'Tecnología - Apple' },
+    { value: '/images/markets/spacex-mars.png', label: 'Tecnología - SpaceX' },
+    { value: '/images/markets/global-warming.png', label: 'Otros - Clima' },
+    { value: '/images/markets/alien-life.png', label: 'Otros - Ciencia' }
   ];
   
   const handleChange = (e) => {

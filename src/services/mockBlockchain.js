@@ -155,6 +155,7 @@ export const mockBlockchain = {
         description: "El precio de Bitcoin (BTC) debe alcanzar o superar los $100,000 USD en cualquier exchange principal como Binance, Coinbase o Kraken durante al menos 1 hora antes del 31 de diciembre de 2025.",
         category: "crypto",
         country: null,  // Global - no tiene país específico
+        imageUrl: "/images/markets/bitcoin-price2.png", // Imagen específica
         endDate: new Date(2025, 11, 31).toISOString(),
         yesPool: 3250,
         noPool: 1850,
@@ -165,6 +166,7 @@ export const mockBlockchain = {
         title: "¿Ethereum tendrá más de 500,000 validadores antes de julio?",
         description: "La red Ethereum debe alcanzar o superar los 500,000 validadores activos en la blockchain oficial según etherscan.io antes del 1 de julio de 2025.",
         category: "crypto",
+        imageUrl: "/images/markets/ethereum.png", // Imagen específica
         endDate: new Date(2025, 6, 1).toISOString(),
         yesPool: 1875,
         noPool: 2340,
@@ -178,6 +180,7 @@ export const mockBlockchain = {
         description: "Argentina debe ser declarada campeona oficial de la Copa América 2025 por la CONMEBOL. El mercado se resolverá después de la final del torneo.",
         category: "sports",
         country: "AR",  // Añadido
+        imageUrl: "/images/markets/argentina...otball.png", // Imagen específica
         endDate: new Date(2025, 7, 15).toISOString(),
         yesPool: 4200,
         noPool: 3800,
@@ -189,6 +192,7 @@ export const mockBlockchain = {
         description: "El Real Madrid debe ser declarado campeón oficial de la UEFA Champions League 2025-2026. El mercado se resolverá tras la final.",
         category: "sports",
         country: "ES",  // Añadido
+        imageUrl: "/images/markets/real-madrid.png", // Imagen específica
         endDate: new Date(2026, 5, 30).toISOString(),
         yesPool: 2800,
         noPool: 3100,
@@ -202,6 +206,7 @@ export const mockBlockchain = {
         description: "Debe anunciarse y celebrarse oficialmente una elección general española antes del 1 de octubre de 2025.",
         category: "politics",
         country: "ES",  // Añadido
+        imageUrl: "/images/markets/spain-politics.png", // Imagen específica
         endDate: new Date(2025, 9, 1).toISOString(),
         yesPool: 1250,
         noPool: 3650,
@@ -213,6 +218,7 @@ export const mockBlockchain = {
         description: "Kamala Harris debe anunciar oficialmente su candidatura para las elecciones presidenciales de Estados Unidos de 2028.",
         category: "politics",
         country: "US",  // Añadido
+        imageUrl: "/images/markets/harris.png", // Imagen específica
         endDate: new Date(2027, 11, 31).toISOString(),
         yesPool: 2950,
         noPool: 1870,
@@ -226,6 +232,7 @@ export const mockBlockchain = {
         description: "El estreno de la nueva temporada de House of the Dragon debe alcanzar o superar los 15 millones de espectadores globales según las cifras oficiales de HBO/Warner.",
         category: "entertainment",
         country: "US",  // Añadido
+        imageUrl: "/images/markets/house-of-...ragon.png", // Imagen específica
         endDate: new Date(2025, 7, 1).toISOString(),
         yesPool: 1780,
         noPool: 920,
@@ -236,6 +243,7 @@ export const mockBlockchain = {
         title: "¿La próxima película de Marvel superará los $1,000 millones en taquilla?",
         description: "La próxima película del Universo Cinematográfico de Marvel debe recaudar más de $1,000 millones USD globalmente según Box Office Mojo.",
         category: "entertainment",
+        imageUrl: "/images/markets/marvel.png", // Imagen específica
         endDate: new Date(2025, 11, 31).toISOString(),
         yesPool: 1450,
         noPool: 2180,
@@ -249,6 +257,7 @@ export const mockBlockchain = {
         description: "Apple debe anunciar y comenzar a vender oficialmente unas gafas/dispositivo de realidad aumentada (no VR) antes del 1 de septiembre de 2025.",
         category: "technology",
         country: "US",  // Añadido
+        imageUrl: "/images/markets/apple-ar.png", // Imagen específica
         endDate: new Date(2025, 8, 1).toISOString(),
         yesPool: 2150,
         noPool: 3280,
@@ -260,6 +269,7 @@ export const mockBlockchain = {
         description: "SpaceX debe completar con éxito una misión tripulada a Marte con al menos un aterrizaje y posterior despegue seguro antes del 1 de enero de 2030.",
         category: "technology",
         country: "US",  // Añadido
+        imageUrl: "/images/markets/spacex-mars.png", // Imagen específica
         endDate: new Date(2029, 11, 31).toISOString(),
         yesPool: 1840,
         noPool: 4120,
@@ -273,6 +283,7 @@ export const mockBlockchain = {
         description: "El año 2025 debe ser declarado oficialmente por la NASA o la NOAA como el año con la temperatura global promedio más alta jamás registrada.",
         category: "other",
         country: null,  // Global - no tiene país específico
+        imageUrl: "/images/markets/global-warming.png", // Imagen específica
         endDate: new Date(2026, 1, 15).toISOString(),
         yesPool: 3760,
         noPool: 1230,
@@ -284,6 +295,7 @@ export const mockBlockchain = {
         description: "Una agencia gubernamental, institución científica o universidad reconocida debe anunciar el descubrimiento de evidencia concluyente (no ambigua) de vida extraterrestre antes del 1 de enero de 2027.",
         category: "other",
         country: null,  // Global - no tiene país específico
+        imageUrl: "/images/markets/alien-life.png", // Imagen específica
         endDate: new Date(2026, 11, 31).toISOString(),
         yesPool: 890,
         noPool: 4560,
