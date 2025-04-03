@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    output: 'export',
+    // output: 'export',
     // Opcional: ayuda con las rutas dinámicas en hosting estático
-    trailingSlash: true,
+    // trailingSlash: true,
   };
   
   export default nextConfig;

@@ -7,6 +7,8 @@ import { useWallet } from '../../../contexts/WalletContext';
 import { mockBlockchain } from '../../../services/mockBlockchain';
 import MarketImage from '../../../components/MarketImage';
 
+export const dynamic = 'force-static';
+
 export default function CreateMarket() {
   const router = useRouter();
   const { publicKey, connected, balance, connect } = useWallet();

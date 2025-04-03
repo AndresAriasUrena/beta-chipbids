@@ -1,4 +1,4 @@
-// src/app/markets/[id]/page.jsx
+// src/app/market/[id]/page.jsx
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -10,6 +10,31 @@ import ProbabilityChart from '../../../components/ProbabilityChart';
 import MarketSummaryAI from '../../../components/MarketSummaryAI';
 import ResolveMarketModal from '../../../components/ResolveMarketModal';
 import MarketImage from '../../../components/MarketImage';
+
+// Esto es importante para la exportación estática
+export const dynamicParams = false;
+
+// Esta función es necesaria para la exportación estática
+// Se ejecuta en tiempo de construcción para generar todas las rutas estáticas
+// export async function generateStaticParams() {
+//   // En un entorno de construcción real, aquí obtendríamos los IDs de los mercados
+//   // desde una API o un CMS. Para este ejemplo, usamos IDs estáticos.
+//   return [
+//     { id: 'bitcoin-price' },
+//     { id: 'ethereum-validators' },
+//     { id: 'argentina-copa' },
+//     { id: 'real-madrid-champions' },
+//     { id: 'spain-elections' },
+//     { id: 'harris-candidate' },
+//     { id: 'house-dragon-viewers' },
+//     { id: 'marvel-box-office' },
+//     { id: 'apple-ar-glasses' },
+//     { id: 'spacex-mars' },
+//     { id: 'global-temperature' },
+//     { id: 'alien-evidence' }
+//   ];
+// }
+
 
 export default function MarketDetail() {
   const router = useRouter();

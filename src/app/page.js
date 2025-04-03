@@ -11,6 +11,9 @@ import TrendingMarkets from '../components/TrendingMarkets';
 import MarketImage from '../components/MarketImage';
 import { Toaster, toast } from 'react-hot-toast';
 
+import CategoryBanners from '@/components/CategoryBanners';
+
+export const dynamic = 'force-static';
 
 export default function Home() {
   const { publicKey, connected, balance, connect, disconnect, loading } = useWallet();
@@ -130,21 +133,38 @@ export default function Home() {
     };
     
     loadMarkets();
-  }, []); // Ya no depende de 'connected'
+  }, []);  // Ya no depende de 'connected'
 
   // Encontrar mercados destacados
   const featuredMarkets = markets.length > 0 
-    ? [
-        // El mercado con más apuestas para "Popular"
-        markets.sort((a, b) => (b.yesPool + b.noPool) - (a.yesPool + a.noPool))[0],
-        // El mercado más disputado (cercano a 50/50) para "Tendencia"
-        markets.sort((a, b) => {
-          const aRatio = a.yesPool / (a.yesPool + a.noPool) || 0.5;
-          const bRatio = b.yesPool / (b.yesPool + b.noPool) || 0.5;
-          return Math.abs(0.5 - aRatio) - Math.abs(0.5 - bRatio);
-        })[0]
-      ]
-    : [];
+  ? (function() {
+      // Crear una copia para ordenar sin modificar el original
+      const marketsCopy = [...markets];
+      
+      // Ordenar por volumen total (suma de apuestas) para encontrar el más popular
+      const sortedByVolume = [...marketsCopy].sort((a, b) => 
+        (b.yesPool + b.noPool) - (a.yesPool + a.noPool)
+      );
+      
+      // Obtener el mercado más popular
+      const mostPopular = sortedByVolume[0];
+      
+      // Filtrar este mercado para que no aparezca dos veces
+      const remainingMarkets = marketsCopy.filter(m => m.id !== mostPopular.id);
+      
+      // Ordenar los mercados restantes por cercanía a 50/50 para encontrar el más disputado
+      const sortedByDispute = [...remainingMarkets].sort((a, b) => {
+        const aRatio = a.yesPool / (a.yesPool + a.noPool) || 0.5;
+        const bRatio = b.yesPool / (b.yesPool + b.noPool) || 0.5;
+        return Math.abs(0.5 - aRatio) - Math.abs(0.5 - bRatio);
+      });
+      
+      // El mercado más disputado (más cercano a 50/50)
+      const mostDisputed = sortedByDispute[0] || sortedByVolume[1]; // Fallback al segundo más popular
+      
+      return [mostPopular, mostDisputed];
+    })()
+  : [];
 
     // Función para calcular porcentaje
     const getPercentage = (part, total) => {
@@ -260,6 +280,9 @@ export default function Home() {
       />
 
       <main className="container mx-auto px-4 pt-6">
+
+        <CategoryBanners/>
+
         {/* Estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-[#151515] border border-[#222] rounded-lg p-4 hover:border-[#00e5ff] transition-all hover:shadow-[0_0_10px_rgba(0,229,255,0.3)]">
@@ -490,7 +513,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* Minijuegos destacados */}
+        {/* Minijuegos destacados con videos */}
         <div className="mt-12 bg-gradient-to-r from-[#101021] to-[#101016] rounded-lg p-6 border border-[#222]">
           <h3 className="text-xl font-bold mb-4 text-[#00e5ff] flex items-center">
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -501,51 +524,79 @@ export default function Home() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-[#151515] rounded-lg p-4 border border-[#222] hover:border-[#00e5ff] transition-all hover:shadow-[0_0_10px_rgba(0,229,255,0.3)]">
-              <div className="relative h-32 rounded bg-gradient-to-r from-[#101018] to-[#121212] mb-3 overflow-hidden flex items-center justify-center">
-                <div className="absolute inset-0 opacity-20" style={{
-                  backgroundImage: `radial-gradient(circle, rgba(0,229,255,0.4) 1px, transparent 1px)`,
-                  backgroundSize: '16px 16px'
-                }}></div>
-                <span className="text-5xl">🎯</span>
+              <div className="relative h-32 rounded bg-[#0a0a0a] mb-3 overflow-hidden">
+                {/* Video de Plinko */}
+                <video 
+                  className="absolute inset-0 w-full h-full object-cover"
+                  autoPlay 
+                  loop 
+                  muted 
+                  playsInline
+                >
+                  <source src="/videos/plinko.mp4" type="video/mp4" />
+                  Tu navegador no soporta el tag de video.
+                </video>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] to-transparent opacity-50"></div>
               </div>
               <h4 className="text-lg font-semibold mb-1 text-white">PLINKO</h4>
               <p className="text-gray-400 text-sm">Hasta 1000x multiplicador con caída de bolas</p>
             </div>
             
             <div className="bg-[#151515] rounded-lg p-4 border border-[#222] hover:border-[#00e5ff] transition-all hover:shadow-[0_0_10px_rgba(0,229,255,0.3)]">
-              <div className="relative h-32 rounded bg-gradient-to-r from-[#101018] to-[#121212] mb-3 overflow-hidden flex items-center justify-center">
-                <div className="absolute inset-0 opacity-20" style={{
-                  backgroundImage: `radial-gradient(circle, rgba(0,229,255,0.4) 1px, transparent 1px)`,
-                  backgroundSize: '16px 16px'
-                }}></div>
-                <span className="text-5xl">🎲</span>
+              <div className="relative h-32 rounded bg-[#0a0a0a] mb-3 overflow-hidden">
+                {/* Video de Dice */}
+                <video 
+                  className="absolute inset-0 w-full h-full object-cover"
+                  autoPlay 
+                  loop 
+                  muted 
+                  playsInline
+                >
+                  <source src="/videos/dice.mp4" type="video/mp4" />
+                  Tu navegador no soporta el tag de video.
+                </video>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] to-transparent opacity-50"></div>
               </div>
               <h4 className="text-lg font-semibold mb-1 text-white">DICE</h4>
               <p className="text-gray-400 text-sm">Predice si el dado caerá por encima o por debajo</p>
             </div>
             
             <div className="bg-[#151515] rounded-lg p-4 border border-[#222] hover:border-[#00e5ff] transition-all hover:shadow-[0_0_10px_rgba(0,229,255,0.3)]">
-              <div className="relative h-32 rounded bg-gradient-to-r from-[#101018] to-[#121212] mb-3 overflow-hidden flex items-center justify-center">
-                <div className="absolute inset-0 opacity-20" style={{
-                  backgroundImage: `radial-gradient(circle, rgba(0,229,255,0.4) 1px, transparent 1px)`,
-                  backgroundSize: '16px 16px'
-                }}></div>
-                <span className="text-5xl">💣</span>
+              <div className="relative h-32 rounded bg-[#0a0a0a] mb-3 overflow-hidden">
+                {/* Video de Mines */}
+                <video 
+                  className="absolute inset-0 w-full h-full object-cover"
+                  autoPlay 
+                  loop 
+                  muted 
+                  playsInline
+                >
+                  <source src="/videos/mines.mp4" type="video/mp4" />
+                  Tu navegador no soporta el tag de video.
+                </video>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] to-transparent opacity-50"></div>
               </div>
               <h4 className="text-lg font-semibold mb-1 text-white">MINES</h4>
               <p className="text-gray-400 text-sm">Encuentra las gemas y evita las minas</p>
             </div>
             
             <div className="bg-[#151515] rounded-lg p-4 border border-[#222] hover:border-[#00e5ff] transition-all hover:shadow-[0_0_10px_rgba(0,229,255,0.3)]">
-              <div className="relative h-32 rounded bg-gradient-to-r from-[#101018] to-[#121212] mb-3 overflow-hidden flex items-center justify-center">
-                <div className="absolute inset-0 opacity-20" style={{
-                  backgroundImage: `radial-gradient(circle, rgba(0,229,255,0.4) 1px, transparent 1px)`,
-                  backgroundSize: '16px 16px'
-                }}></div>
-                <span className="text-5xl">📈</span>
+              <div className="relative h-32 rounded bg-[#0a0a0a] mb-3 overflow-hidden">
+                {/* Video de Crash */}
+                <video 
+                  className="absolute inset-0 w-full h-full object-cover"
+                  autoPlay 
+                  loop 
+                  muted 
+                  playsInline
+                >
+                  <source src="/videos/cases.mp4" type="video/mp4" />
+                  Tu navegador no soporta el tag de video.
+                </video>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] to-transparent opacity-50"></div>
               </div>
-              <h4 className="text-lg font-semibold mb-1 text-white">CRASH</h4>
-              <p className="text-gray-400 text-sm">Retira tus fondos antes de que el gráfico caiga</p>
+              <h4 className="text-lg font-semibold mb-1 text-white">CASES</h4>
+              <p className="text-gray-400 text-sm">Puedes elegir el indicado?</p>
             </div>
           </div>
           

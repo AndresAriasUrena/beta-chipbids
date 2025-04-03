@@ -96,7 +96,7 @@ const MarketImage = ({
         <>
           {/* Capa de fondo difuminada */}
           <div 
-            className="absolute inset-0 bg-cover bg-center"
+            className="absolute inset-0 bg-cover bg-top" // Cambiado a bg-top
             style={{ 
               backgroundImage: `url(${imageSrc})`,
               filter: 'blur(8px)',
@@ -105,9 +105,9 @@ const MarketImage = ({
             }}
           />
           
-          {/* Imagen principal */}
+          {/* Imagen principal - Cambiado para alinear a la parte superior */}
           <div 
-            className="absolute inset-0 bg-cover bg-center flex items-center justify-center"
+            className="absolute inset-0 bg-cover bg-top flex items-start justify-center" // Cambiado de center a start
             style={{ backgroundImage: `url(${imageSrc})` }}
           >
             {/* Esta sería la implementación real con Next/Image */}
@@ -115,7 +115,7 @@ const MarketImage = ({
               src={imageSrc} 
               alt={market.title || 'Market image'} 
               fill
-              style={{ objectFit: 'cover' }}
+              style={{ objectFit: 'cover', objectPosition: 'top' }} // Añadido objectPosition: 'top'
               onError={handleImageError}
             /> */}
           </div>
