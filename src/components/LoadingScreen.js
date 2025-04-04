@@ -41,15 +41,12 @@ export default function LoadingScreen() {
           @keyframes logoAnimation {
             0% {
               transform: scale(1);
-              filter: none;
             }
             50% {
               transform: scale(1.05);
-              filter: brightness(0) saturate(100%) invert(70%) sepia(100%) saturate(1000%) hue-rotate(160deg) brightness(100%) contrast(100%);
             }
             100% {
               transform: scale(1);
-              filter: none;
             }
           }
         `}</style>
